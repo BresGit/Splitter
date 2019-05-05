@@ -28,6 +28,7 @@ mapping (address => uint ) public accounts;
 
 //pull request test
 //git testing in main branch
+//git testing in develop branch
 function splitt() public payable {
 	//require (msg.sender == alice);
 	require(msg.sender==alice, "Sender must be Alice");
