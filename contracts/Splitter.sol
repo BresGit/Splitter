@@ -1,63 +1,55 @@
 
 pragma solidity ^0.5.0;
+import "@openzeppelin/contracts/math/SafeMath.sol";
+
 contract Splitter
 {
 // this contract will show balances of 3 people: Alice, Bob and Carol
-// when Alice sends ether it will be split in half to Bob and carol
-// when Alice send an odd value the remainder will be returned to Alice
+// when Alice sends ether it will be split in half to Bob and Carol
+// when Alice sends an odd value the remainder will be returned to Alice
+    using SafeMath for uint256;
 
-	address public alice;
-	address public bob;
-	address public carol;
+    address public alice;
+    address public bob;
+    address public carol;
 
-	event Withdrawn(address indexed sender,  uint256 amount);
-	event SplitterLog(address receiver, uint256 amountReceived);
+    event Withdrawn(address indexed sender,  uint256 amount);
+    event SplitterLog(address _bob, address _carol, uint256 amountReceived);
 
-	mapping (address => uint ) public accounts;
+    mapping (address => uint ) public accounts;
 
-	constructor (address _alice, address _bob, address _carol) public
-	{
+    constructor (address _bob, address _carol) public
+    {
 
-		require(_alice != address(0) && _bob != address(0) && _carol != address(0), "Adress cant be zero");
+        require(_bob != address(0) && _carol != address(0), "Adress cant be zero");
 
-		alice = _alice;
-		bob = _bob;
-		carol = _carol;
-	}
-
-	function splitt() public payable
-	{
-		require(msg.sender==alice, "Sender must be Alice");
-		require(msg.value > 0, "Value must be greater > 0");
-
-	    accounts[bob] = add(accounts[bob], msg.value/2);
-	    emit SplitterLog(bob,msg.value/2);
-
-	    accounts[carol] = add(accounts[carol], msg.value/2);
-	    emit SplitterLog(carol, msg.value/2);
-
-		// for odd received values return back to Alice sender
-		if (msg.value % 2 > 0)
-		{
-			accounts[alice] = add(accounts[alice], msg.value % 2);
-		}
-	}
-
-	//copied from openzeplin overflow
-	function add(uint256 a, uint256 b) internal pure returns (uint256)
- 	{
-	   uint256 c = a + b;
-	   require(c >= a, "SafeMath: addition overflow");
-
-	   return c;
+        alice = msg.sender;
+        bob = _bob;
+        carol = _carol;
     }
 
-	function withdraw() public
-	{
-		require(accounts[msg.sender] > 0, "Sender Address is Available");
-		uint value = accounts[msg.sender];
-		accounts[msg.sender] = 0;
-		msg.sender.transfer(value);
-		emit Withdrawn(msg.sender, value);
-	}
+    function splitt() public payable
+    {
+        require(msg.sender==alice, "Sender must be Alice");
+        require(msg.value > 0, "Value must be greater > 0");
+
+        accounts[bob] = accounts[bob].add(msg.value/2);
+        accounts[carol] = accounts[carol].add(msg.value/2);
+        emit SplitterLog(bob, carol, msg.value/2);
+
+        // for odd received values return back to Alice sender
+        if (msg.value % 2 > 0)
+        {
+            accounts[alice] = accounts[alice].add(msg.value % 2);
+        }
+    }
+
+    function withdraw() public
+    {
+        uint value = accounts[msg.sender];
+        require(value > 0, "Sender Address is Available");
+        accounts[msg.sender] = 0;
+        msg.sender.transfer(value);
+        emit Withdrawn(msg.sender, value);
+    }
 }

@@ -1,10 +1,10 @@
 const Splitter = artifacts.require('Splitter.sol');
 
-module.exports = function(deployer,network,accounts) {
+module.exports = function(deployer, network, accounts) {
 
-  const alice=accounts[0];
-  const bob=accounts[1];
-  const carol=accounts[2];
+  const alice = accounts[0];
+  const bob = accounts[1];
+  const carol = accounts[2];
 
-  deployer.deploy(Splitter,alice,bob,carol);
+  deployer.deploy(Splitter, bob, carol);
 };
