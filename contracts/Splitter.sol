@@ -13,8 +13,9 @@ contract Splitter
     address public bob;
     address public carol;
 
+
     event Withdrawn(address indexed sender,  uint256 amount);
-    event SplitterLog(address _bob, address _carol, uint256 amountReceived);
+    event SplitterLog(address addr1, address addr2, uint256 amountReceived, uint256 remainder);
 
     mapping (address => uint ) public accounts;
 
@@ -28,20 +29,22 @@ contract Splitter
         carol = _carol;
     }
 
-    function splitt() public payable
+    function split() public payable
     {
-        require(msg.sender==alice, "Sender must be Alice");
+        require(msg.sender == alice, "Sender must be Alice");
         require(msg.value > 0, "Value must be greater > 0");
 
         accounts[bob] = accounts[bob].add(msg.value/2);
         accounts[carol] = accounts[carol].add(msg.value/2);
-        emit SplitterLog(bob, carol, msg.value/2);
+
 
         // for odd received values return back to Alice sender
         if (msg.value % 2 > 0)
         {
             accounts[alice] = accounts[alice].add(msg.value % 2);
         }
+
+        emit SplitterLog(bob, carol, msg.value/2, msg.value % 2);
     }
 
     function withdraw() public
