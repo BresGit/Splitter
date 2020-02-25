@@ -15,8 +15,7 @@ contract Splitter
 
 
     event Withdrawn(address indexed sender,  uint256 amount);
-    event SplitterLog(address addr1, address addr2, uint256 amountReceived, uint256 remainder);
-
+    event SplitterLog(uint256 amount);
     mapping (address => uint ) public accounts;
 
     constructor (address _bob, address _carol) public
@@ -33,7 +32,6 @@ contract Splitter
     {
         require(msg.sender == alice, "Sender must be Alice");
         require(msg.value > 0, "Value must be greater > 0");
-
         accounts[bob] = accounts[bob].add(msg.value/2);
         accounts[carol] = accounts[carol].add(msg.value/2);
 
@@ -44,7 +42,8 @@ contract Splitter
             accounts[alice] = accounts[alice].add(msg.value % 2);
         }
 
-        emit SplitterLog(bob, carol, msg.value/2, msg.value % 2);
+        emit SplitterLog(msg.value);
+
     }
 
     function withdraw() public
