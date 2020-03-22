@@ -9,7 +9,7 @@ const { toBN } = web3.utils;
 
 contract("Splitter", accounts => {
 
-    const [person2, person3, sender, unknownPerson] = accounts;
+    const [person2, person3, sender] = accounts;
     let splitter;
 
     async function calcTransCost(txObj)
@@ -49,7 +49,7 @@ contract("Splitter", accounts => {
         assert.strictEqual(txObj.receipt.logs.length, 1);
         assert.strictEqual(txObj.logs.length, 1);
         const SplitterLog = txObj.logs[0];
-        assert.strictEqual(SplitterLog.event, "SplitterLog");;
+        assert.strictEqual(SplitterLog.event, "SplitterLog");
         assert.strictEqual(SplitterLog.args.amount.toString(10), '9000');
 
         const p2Balance = await splitter.accounts(person2);
@@ -117,7 +117,8 @@ contract("Splitter", accounts => {
         const trCost = await calcTransCost(txObj);
         const p2ExpectedBalance  = p2InitBN.sub(trCost).add(toBN(4500));
 
-        assert.strictEqual(p2ExpectedBalance.toString(10), p2AfterWithdrawBalance.toString(10), "Expected balance not equal After Withdraw Balance");
+        assert.strictEqual(p2ExpectedBalance.toString(10), p2AfterWithdrawBalance.toString(10),
+        "Expected balance not equal After Withdraw Balance");
 
     });
 
@@ -146,7 +147,8 @@ contract("Splitter", accounts => {
         const trCost = await calcTransCost(txObj);
         const p3ExpectedBalance  = p3InitBN.sub(trCost).add(toBN(4500));
 
-        assert.strictEqual(p3ExpectedBalance.toString(10), p3AfterWithdrawBalance.toString(10), "Expected balance not equal After Withdraw Balance");
+        assert.strictEqual(p3ExpectedBalance.toString(10), p3AfterWithdrawBalance.toString(10),
+        "Expected balance not equal After Withdraw Balance");
 
     });
 
