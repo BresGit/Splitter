@@ -5,6 +5,8 @@ const { constants,
 const { ZERO_ADDRESS } = constants;
 
 const Splitter = artifacts.require("SplitterVer2");
+const SplitterVer2Mock = artifacts.require("SplitterVer2Mock");
+
 const { toBN } = web3.utils;
 
 contract("Splitter", accounts => {
@@ -24,7 +26,7 @@ contract("Splitter", accounts => {
     beforeEach("should deploy Splitter", async function()
     {
 
-        splitter = await Splitter.new();
+        splitter = await Splitter.new({from:sender});
 
     });
 
@@ -33,10 +35,8 @@ contract("Splitter", accounts => {
 
         const p2 = await splitter.accounts(person2);
         assert.strictEqual(p2.toString(10), '0', "p2  is not 0");
-
         const p3 = await splitter.accounts(person3);
         assert.strictEqual(p3.toString(10), '0', "p3  is not 0");
-
         const senderPerson = await splitter.accounts(sender);
         assert.strictEqual(senderPerson.toString(10), '0', "senderPerson  is not 0");
 
@@ -48,10 +48,11 @@ contract("Splitter", accounts => {
         const txObj = await splitter.split(person2,person3, { from: sender, value: 9000 });
         assert.strictEqual(txObj.receipt.logs.length, 1);
         assert.strictEqual(txObj.logs.length, 1);
-        const SplitterLog = txObj.logs[0];
-        assert.strictEqual(SplitterLog.event, "SplitterLog");
-        assert.strictEqual(SplitterLog.args.amount.toString(10), '9000');
-
+        const splitterLog = txObj.logs[0];
+        assert.strictEqual(splitterLog.event, "SplitterLog");
+        assert.strictEqual(splitterLog.args.person2, person2);
+        assert.strictEqual(splitterLog.args.person3, person3);
+        assert.strictEqual(splitterLog.args.sender, sender);
         const p2Balance = await splitter.accounts(person2);
         assert.strictEqual(p2Balance.toString(10), '4500', "p2Balance  is not 4500");
         const p3Balance = await splitter.accounts(person3);
@@ -69,9 +70,8 @@ contract("Splitter", accounts => {
         const txObj = await splitter.split(person2,person3, { from: sender, value: 9001 });
         assert.strictEqual(txObj.receipt.logs.length, 1);
         assert.strictEqual(txObj.logs.length, 1);
-        const SplitterLog = txObj.logs[0];
-        assert.strictEqual(SplitterLog.event, "SplitterLog");
-        assert.strictEqual(SplitterLog.args.amount.toString(10), '9001');
+        const splitterLog = txObj.logs[0];
+        assert.strictEqual(splitterLog.event, "SplitterLog");
         const p2Balance = await splitter.accounts(person2);
         assert.strictEqual(p2Balance.toString(10), '4500', "p2Balance  is not 4500");
         const p3Balance = await splitter.accounts(person3);
@@ -99,12 +99,11 @@ contract("Splitter", accounts => {
 
         assert.strictEqual(p2Balance.toString(10), '4500', "p2Balance  is not 4500");
         const p2InitBalance = await web3.eth.getBalance(person2);
-
         const txObj = await splitter.withdraw({from: person2});
         assert.strictEqual(txObj.receipt.logs.length, 1);
         assert.strictEqual(txObj.logs.length, 1);
         const logWithdraw = txObj.logs[0];
-        assert.strictEqual(logWithdraw.event, "Withdrawn");
+        assert.strictEqual(logWithdraw.event, "WithdrawLog");
         assert.strictEqual(logWithdraw.args.sender, person2);
         assert.strictEqual(logWithdraw.args.amount.toString(10), '4500');
 
@@ -126,50 +125,43 @@ contract("Splitter", accounts => {
     {
 
         await splitter.split(person2, person3, { from: sender, value: 9000 });
-        // expectRevert
+
         let p3Balance = await splitter.accounts(person3);
 
         assert.strictEqual(p3Balance.toString(10), '4500', "p3Balance  is not 4500");
-        const p3InitBalance = await web3.eth.getBalance(person3);
+        const p3InitBalance = toBN(await web3.eth.getBalance(person3));
         const txObj = await splitter.withdraw({from: person3});
-
         assert.strictEqual(txObj.receipt.logs.length, 1);
         assert.strictEqual(txObj.logs.length, 1);
         const logWithdraw = txObj.logs[0];
-        assert.strictEqual(logWithdraw.event, "Withdrawn");
+        assert.strictEqual(logWithdraw.event, "WithdrawLog");
         assert.strictEqual(logWithdraw.args.sender, person3);
         assert.strictEqual(logWithdraw.args.amount.toString(10), '4500');
         const p3AfterWithdrawBalance = toBN(await web3.eth.getBalance(person3));
         p3Balance = await splitter.accounts(person3);
         assert.strictEqual(p3Balance.toString(10), '0', "p3Balance  is not 0");
 
-        const p3InitBN  = toBN(p3InitBalance);
         const trCost = await calcTransCost(txObj);
-        const p3ExpectedBalance  = p3InitBN.sub(trCost).add(toBN(4500));
+        const p3ExpectedBalance  = p3InitBalance.sub(trCost).add(toBN(4500));
 
         assert.strictEqual(p3ExpectedBalance.toString(10), p3AfterWithdrawBalance.toString(10),
         "Expected balance not equal After Withdraw Balance");
 
     });
 
+
     it("should person2 withdraw after 2 splits", async function()
     {
 
         await splitter.split(person2, person3, { from: sender, value: 9000 });
-        let p2Balance = await splitter.accounts(person2);
-
-        assert.strictEqual(p2Balance.toString(10), '4500', "p2Balance  is not 4500");
         await splitter.split(person2, person3, { from: sender, value: 2000});
-        p2Balance = await splitter.accounts(person2);
-        assert.strictEqual(p2Balance.toString(10), '5500', "p2Balance  is not 5500");
-
         const p2InitBalance = await web3.eth.getBalance(person2);
-        const txObj = await splitter.withdraw({from: person2 });
+        const txObj = await splitter.withdraw({from: person2});
 
         assert.strictEqual(txObj.receipt.logs.length, 1);
         assert.strictEqual(txObj.logs.length, 1);
         const logWithdraw = txObj.logs[0];
-        assert.strictEqual(logWithdraw.event, "Withdrawn");
+        assert.strictEqual(logWithdraw.event, "WithdrawLog");
         assert.strictEqual(logWithdraw.args.sender, person2);
         assert.strictEqual(logWithdraw.args.amount.toString(10), '5500');
 
@@ -185,5 +177,34 @@ contract("Splitter", accounts => {
         assert.strictEqual(p2ExpectedBalance.toString(10), p2AfterWithdrawBalance.toString(10), "Expected balance not equal After Withdraw Balance");
 
     });
+
+
+    it("should sender be able to complete 2 splits", async function()
+    {
+
+        await splitter.split(person2, person3, { from: sender, value: 9000 });
+        let p2Balance = await splitter.accounts(person2);
+
+        assert.strictEqual(p2Balance.toString(10), '4500', "p2Balance  is not 4500");
+        await splitter.split(person2, person3, { from: sender, value: 2000});
+        p2Balance = await splitter.accounts(person2);
+        assert.strictEqual(p2Balance.toString(10), '5500', "p2Balance  is not 5500");
+    });
+
+    it("should withdraw via recepient/Mock Contract", async function()
+    {
+
+        const splitterVer2Mock = await SplitterVer2Mock.new({from:sender});
+        await splitter.split(person2,splitterVer2Mock.address, {from: sender, value: 9000});
+
+        const txObj = await splitterVer2Mock.withdraw(splitter.address,{from:sender});
+        assert.strictEqual(txObj.logs.length,1);
+        const logReceived = txObj.logs[0];
+        assert.strictEqual(logReceived.event,"LogReceived");
+        assert.strictEqual(txObj.receipt.rawLogs.length,2,"not 2 rawLogs Objects");
+        assert.strictEqual(txObj.receipt.rawLogs[0].topics[0], web3.utils.keccak256("LogReceived(address,uint256)"),"LogReceived hash Not Equal");
+        assert.strictEqual(txObj.receipt.rawLogs[1].topics[0], web3.utils.keccak256("WithdrawLog(address,uint256)"),"WithdrawLog hash Not Equal");
+
+    })
 
 });
