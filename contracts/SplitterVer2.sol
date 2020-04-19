@@ -23,7 +23,7 @@ contract SplitterVer2
     {
 
         require(msg.value > 0, "Value must be greater > 0");
-        require(person2!= address(0), 'Adress cant be zero');
+        require(person2 != address(0), 'Adress cant be zero');
         require(person3 != address(0), 'Adress cant be zero');
 
         accounts[person2] = accounts[person2].add(msg.value/2);
@@ -45,7 +45,7 @@ contract SplitterVer2
         require(value > 0, "Withdrawing balance > 0 ");
         accounts[msg.sender] = 0;
 
-        (bool success, ) = msg.sender.call.value(value)(""); //the value is transfered to the sender/SplitterVer2Mock
+        (bool success, ) = msg.sender.call.value(value)(""); //the value is transfered to the sender/Withdrawer
         require(success, "Transfer failed.");
         emit WithdrawLog(msg.sender, value);
     }
