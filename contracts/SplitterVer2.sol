@@ -42,11 +42,10 @@ contract SplitterVer2
     function withdraw() public
     {
         uint value = accounts[msg.sender];
-        require(value > 0, "Withdrawing balance > 0 ");
+        require(value > 0, "Withdrawing balance > 0");
         accounts[msg.sender] = 0;
-
-        (bool success, ) = msg.sender.call.value(value)(""); //the value is transfered to the sender/Withdrawer
-        require(success, "Transfer failed.");
         emit WithdrawLog(msg.sender, value);
+        (bool success, ) = msg.sender.call.value(value)(""); //the value is transfered/call to the sender/Withdrawer
+        require(success, "Transfer failed.");
     }
 }

@@ -202,8 +202,8 @@ contract("Splitter", accounts => {
         const logReceived = txObj.logs[0];
         assert.strictEqual(logReceived.event,"LogReceived");
         assert.strictEqual(txObj.receipt.rawLogs.length,2,"not 2 rawLogs Objects");
-        assert.strictEqual(txObj.receipt.rawLogs[0].topics[0], web3.utils.keccak256("LogReceived(address,uint256)"),"LogReceived hash Not Equal");
-        assert.strictEqual(txObj.receipt.rawLogs[1].topics[0], web3.utils.keccak256("WithdrawLog(address,uint256)"),"WithdrawLog hash Not Equal");
+        assert.strictEqual(txObj.receipt.rawLogs[0].topics[0], web3.utils.keccak256("WithdrawLog(address,uint256)"),"WithdrawLog hash Not Equal");
+        assert.strictEqual(txObj.receipt.rawLogs[1].topics[0], web3.utils.keccak256("LogReceived(address,uint256)"),"LogReceived hash Not Equal");
 
         const collectedBalance = await web3.eth.getBalance(withdrawer.address);
         assert.strictEqual(collectedBalance.toString(10),'4500',"collectedBalance not 4500");
