@@ -12,7 +12,7 @@ contract Splitter
     address public alice;
     address public bob;
     address public carol;
-    address public carolll;
+    
     
 
 
