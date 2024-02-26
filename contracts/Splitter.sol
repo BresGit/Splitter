@@ -1,6 +1,6 @@
 
 pragma solidity ^0.5.0;
-import "@openzeppelin/contracts/math/SafeMath.sol";
+//import "@openzeppelin/contracts/math/SafeMath.sol";
 
 contract Splitter
 {
@@ -12,7 +12,7 @@ contract Splitter
     address public alice;
     address public bob;
     address public carol;
-    address public carolll;
+    
 
 
     event Withdrawn(address indexed sender,  uint256 amount);
