@@ -12,7 +12,7 @@ contract Splitter
     address public alice;
     address public bob;
     address public carol;
-    address public carolA;
+    address public carolll;
 
 
     event Withdrawn(address indexed sender,  uint256 amount);
