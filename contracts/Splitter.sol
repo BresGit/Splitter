@@ -1,17 +1,18 @@
 
 pragma solidity ^0.5.0;
-//import "@openzeppelin/contracts/math/SafeMath.sol";
+import "@openzeppelin/contracts/math/SafeMath.sol";
 
 contract Splitter
 {
 // this contract will show balances of 3 people: Alice, Bob and Carol
 // when Alice sends ether it will be split in half to Bob and Carol
 // when Alice sends an odd value the remainder will be returned to Alice
-    using SafeMath for uint256;
+    //using SafeMath for uint256;
 
     address public alice;
     address public bob;
     address public carol;
+    address public carolll;
     
 
 
